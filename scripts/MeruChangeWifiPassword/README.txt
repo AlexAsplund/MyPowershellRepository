@@ -1,0 +1,1 @@
+Just a little script i put together to automatically change the WPA password for a SecurityProfile on the Meru WIFI-controller
