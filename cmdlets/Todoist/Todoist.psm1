@@ -1,10 +1,10 @@
 ﻿$APIUri = "https://todoist.com/API/v7/sync"
-$ProjectName = 'POSHDoist'
+$ProjectName = 'Todoist'
 
 <#
 .Synopsis
    Initiate todoist with your APIToken
-.DESCRIPTION
+.Description
    Sets a global variable for the APIToken
 .EXAMPLE
    Set-TodoistAPIToken -APIToken
@@ -58,7 +58,7 @@ function Set-TodoistAPIToken
 .Synopsis
    Get-TodoistSync
    Gets all data from todoist
-.DESCRIPTION
+.Description
    Gets all data from todoist
 .EXAMPLE
    Get-TodoistSync -resources "items","labels" -token $ApiToken
@@ -161,7 +161,7 @@ function Get-TodoistResource
 <#
 .Synopsis
    Gets tasks from todoist
-.DESCRIPTION
+.Description
    Gets all tasks from todoist, can fetch by project name
 .EXAMPLE
    Get-TodoistTask -Project Work
@@ -359,25 +359,25 @@ function New-TodoistTask
 <#
 .Synopsis
    Updates task in todoist.
-.DESCRIPTION
+.Description
    Updates task in todoist.
 .EXAMPLE
-   Update-TodoistTask -Content "Get milk" -Project Personal
+   Update-TodoistTask -Description "Get milk" -Project Personal -Addlabel Shopping
 #>
 function Update-TodoistTask
 {
     [CmdletBinding()]
     Param
     (
-        # Content of the task
+        # Description of the task
         [Parameter(Mandatory=$true)]
         $TaskID = "",
 
         #Pass task object instead of ID.
         $TaskObject = "",
         
-        #Task content
-        $Content = "",
+        #Task Description
+        $Description = "",
         
         #Must be UTC and have format: 2012-3-24T23:59
         $DueDate = "",
@@ -428,10 +428,10 @@ function Update-TodoistTask
             }
 
         }
-        if($Content -ne "")
+        if($Description -ne "")
         {
 
-            $TaskItem.Content = $Content
+            $TaskItem.Description = $Description
             Write-Verbose $TaskItem
 
         }
@@ -488,4 +488,63 @@ function Convert-DateToTodoistDate($date)
 
     return $date | Get-Date -Format "yyyy-M-dThh:mm"
 
+}
+
+<#
+.Synopsis
+   Gets completed tasks
+.DESCRIPTION
+   Gets completed tasks from Todoist, limit is 50 per call, offset starts at 0
+.EXAMPLE
+   Get-TodositCompletedTasks
+#>
+function Get-TodositCompletedTasks
+{
+    [CmdletBinding()]
+    Param
+    (
+        # Offset
+        [int] $Offset
+    )
+
+    Begin
+    {
+
+        $LimitNumber = 50
+        $OffsetNumber = $Offset
+
+        $Uri = "https://todoist.com/API/v7/completed/get_all"
+        $body = @{
+
+            token = $Global:TodositAPIToken
+            limit = $LimitNumber
+            offset = $OffsetNumber
+
+            
+            }
+
+    }
+    Process
+    {
+
+        try
+        {
+            $request = Invoke-RestMethod -Method Post -Body $Body -Uri $Uri -Verbose
+        }
+        catch
+        {
+
+            Write-Error "An error occured while requesting data from $Uri"
+            Write-Error $_
+
+        }
+
+
+    }
+    End
+    {
+
+        return $request
+
+    }
 }
