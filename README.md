@@ -4,7 +4,7 @@ Here I'll add my public powershell modules, scripts and such
 
 MIT License
 
-Copyright (c) [year] [fullname]
+Copyright (c) 2017 Alex Asplund
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
