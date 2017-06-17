@@ -1,4 +1,16 @@
-﻿$APIUri = "https://todoist.com/API/v7/sync"
+﻿##################################################################
+#
+#
+# Author: Alex Asplund
+# Github: https://github.com/AlexAsplund/
+#
+# 
+#
+##################################################################
+
+
+
+$APIUri = "https://todoist.com/API/v7/sync"
 $ProjectName = 'Todoist'
 
 <#
@@ -259,6 +271,9 @@ function New-Guid {
     return ([guid]::NewGuid()).guid
 
 }
+
+
+
 
 <#
 .Synopsis
@@ -538,6 +553,85 @@ function Get-TodositCompletedTasks
             Write-Error $_
 
         }
+
+
+    }
+    End
+    {
+
+        return $request
+
+    }
+}
+
+<#
+.Synopsis
+  Adds a note in todoist to specified taskid
+.DESCRIPTION
+   Adds a note in todoist to specified taskid
+.EXAMPLE
+   Add-Todoistnote -TaskID 234203492 -Content "a nice little note"
+#>
+function Add-TodoistNote
+{
+    [CmdletBinding()]
+    Param
+    (
+        # Content of the note
+        [Parameter(Mandatory=$true)]
+        [string]
+        $Content,
+
+        # TaskID
+        [Parameter(Mandatory=$true)]
+        [string]
+        $TaskID
+    )
+
+    Begin
+    {
+
+
+    }
+    Process
+    {
+
+        $UUID = New-Guid
+        $temp_id = New-Guid
+        $Command = @"
+        [{
+            "type":  "note_add",
+            "temp_id":  "$temp_id",
+            "uuid":  "$UUID",
+            "args":  {
+                         "item_id":  $TaskID,
+                         "content":  "$Content"
+                     }
+        }]
+"@
+
+
+        
+        $body = @{
+
+            token = $Global:TodositAPIToken
+            commands = $Command
+            
+            }
+
+        # Invoke restmethod to fetch data
+        try
+        {
+            $request = Invoke-RestMethod -Method Post -Body $Body -Uri $APIUri -Verbose
+        }
+        catch
+        {
+
+            Write-Error "An error occured while requesting data from $APIUri"
+            Write-Error $_
+
+        }
+
 
 
     }
