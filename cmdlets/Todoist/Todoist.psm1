@@ -13,6 +13,12 @@
 $APIUri = "https://todoist.com/API/v7/sync"
 $ProjectName = 'Todoist'
 
+###############################################################################################
+#
+#
+#
+###############################################################################################
+
 <#
 .Synopsis
    Initiate todoist with your APIToken
@@ -65,6 +71,12 @@ function Set-TodoistAPIToken
 
     }
 }
+
+###############################################################################################
+#
+#
+#
+###############################################################################################
 
 <#
 .Synopsis
@@ -170,6 +182,12 @@ function Get-TodoistResource
     }
 }
 
+###############################################################################################
+#
+#
+#
+###############################################################################################
+
 <#
 .Synopsis
    Gets tasks from todoist
@@ -266,13 +284,23 @@ function Get-TodoistTask
     }
 }
 
+###############################################################################################
+#
+#
+#
+###############################################################################################
+
 function New-Guid {
 
     return ([guid]::NewGuid()).guid
 
 }
 
-
+###############################################################################################
+#
+#
+#
+###############################################################################################
 
 
 <#
@@ -370,6 +398,12 @@ function New-TodoistTask
 
     }
 }
+
+###############################################################################################
+#
+#
+#
+###############################################################################################
 
 <#
 .Synopsis
@@ -498,12 +532,26 @@ function Update-TodoistTask
     }
 }
 
+###############################################################################################
+#
+#
+#
+###############################################################################################
+
 function Convert-DateToTodoistDate($date)
 {
 
     return $date | Get-Date -Format "yyyy-M-dThh:mm"
 
 }
+
+
+###############################################################################################
+#
+#
+#
+###############################################################################################
+
 
 <#
 .Synopsis
@@ -628,6 +676,169 @@ function Add-TodoistNote
         {
 
             Write-Error "An error occured while requesting data from $APIUri"
+            Write-Error $_
+
+        }
+
+
+
+    }
+    End
+    {
+
+        return $request
+
+    }
+}
+
+<#
+.Synopsis
+  Updates a note in todoist
+.DESCRIPTION
+   Update a note in todoist
+.EXAMPLE
+   Update-Todoistnote -TaskID 234203492 -Content "a nice little note"
+#>
+function Update-TodoistNote
+{
+    [CmdletBinding()]
+    Param
+    (
+        # Content of the note
+        [Parameter(Mandatory=$true)]
+        [string]
+        $Content,
+
+        # NoteID
+        [Parameter(Mandatory=$true)]
+        [string]
+        $NoteID
+    )
+
+    Begin
+    {
+
+
+    }
+    Process
+    {
+
+        $UUID = New-Guid
+        $temp_id = New-Guid
+        $Command = @"
+        [{
+            "type":  "note_update",
+            "temp_id":  "$temp_id",
+            "uuid":  "$UUID",
+            "args":  {
+                         "id":  $NoteID,
+                         "content":  "$Content"
+                     }
+        }]
+"@
+
+
+        
+        $body = @{
+
+            token = $Global:TodositAPIToken
+            commands = $Command
+            
+            }
+
+        # Invoke restmethod to fetch data
+        try
+        {
+            $request = Invoke-RestMethod -Method Post -Body $Body -Uri $APIUri -Verbose
+        }
+        catch
+        {
+
+            Write-Error "An error occured while requesting data from $APIUri"
+            Write-Error $_
+
+        }
+
+
+
+    }
+    End
+    {
+
+        return $request
+
+    }
+}
+
+<#
+.Synopsis
+  Exports a project in todoist.
+.DESCRIPTION
+   Exports a project in todoist either as URL or CSV
+.EXAMPLE
+   Export-TodoistProject -ProjectID 2324203492
+#>
+function Export-TodoistProject
+{
+    [CmdletBinding()]
+    Param
+    (
+        # ProjectID
+        [Parameter(Mandatory=$true)]
+        [string]
+        $ProjectID,
+
+        # AsURL or CSV
+        [switch]
+        $AsURL,
+        [switch]
+        $AsCSV
+
+
+    )
+
+    Begin
+    {
+
+        if($AsURL)
+        {
+
+            $cAPIUri = "https://todoist.com/API/v7/templates/export_as_url"
+
+        }
+        if($AsCSV)
+        {
+             
+             $cAPIUri = "https://todoist.com/API/v7/templates/export_as_file"
+
+        }
+
+
+    }
+    Process
+    {
+
+        $UUID = New-Guid
+        $temp_id = New-Guid
+
+
+        
+        $body = @{
+
+            token = $Global:TodositAPIToken
+            project_id = $ProjectID
+            
+            }
+
+        # Invoke restmethod to fetch data
+        try
+        {
+            $request = Invoke-RestMethod -Method Post -Body $Body -Uri $cAPIUri -Verbose
+        }
+        catch
+        {
+
+            Write-Error "An error occured while requesting data from $cAPIUri"
             Write-Error $_
 
         }
