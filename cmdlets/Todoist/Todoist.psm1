@@ -812,6 +812,13 @@ function Export-TodoistProject
              $cAPIUri = "https://todoist.com/API/v7/templates/export_as_file"
 
         }
+        if($AsURL -and $AsCSV)
+        {
+
+            Write-Error "You can't use -AsUrl and AsCSV at the same time.."
+            break
+
+        }
 
 
     }
