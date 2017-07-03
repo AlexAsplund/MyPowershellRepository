@@ -1,0 +1,1 @@
+This script uses the outlook com object, so you need to have the outlook-client installed.
